@@ -1,1 +1,1 @@
-web: cd backend && npm run start
+web: daphne -b 0.0.0.0 -p $PORT gather.asgi:application
