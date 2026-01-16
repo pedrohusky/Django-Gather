@@ -12,29 +12,69 @@
     </div>
 
     {% if realms %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {% for realm in realms %}
             <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ realm.name }}</h3>
-                <p class="text-gray-600 mb-4">Created: {{ realm.created_at|date:"M d, Y" }}</p>
-                <div class="flex gap-2">
-                    <a href="{% url 'play' realm.id %}" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-blue-700">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-2xl font-bold text-gray-900">{{ realm.name }}</h3>
+                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-semibold">Owner</span>
+                </div>
+                <p class="text-gray-600 mb-2">Created: {{ realm.created_at|date:"M d, Y" }}</p>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-sm text-gray-600">Privacy:</span>
+                    <button onclick="togglePrivacy({{ realm.id }}, {{ realm.only_owner|yesno:'true,false' }})" 
+                            class="text-sm px-2 py-1 rounded {% if realm.only_owner %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}" 
+                            id="privacy-{{ realm.id }}">
+                        {% if realm.only_owner %}🔒 Private{% else %}🌐 Public{% endif %}
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <a href="{% url 'play' realm.id %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-blue-700">
                         Enter
                     </a>
+                    <a href="{% url 'edit_realm' realm.id %}" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-purple-700">
+                        Edit
+                    </a>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
                     <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300" onclick="copyShareLink('{{ realm.share_id }}')">
-                        Share
+                        📋 Share
+                    </button>
+                    <button class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700" onclick="deleteRealm({{ realm.id }}, '{{ realm.name }}')">
+                        🗑️ Delete
                     </button>
                 </div>
             </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="text-center py-16">
+        <div class="text-center py-16 mb-12">
             <p class="text-xl text-gray-600 mb-4">You haven't created any spaces yet.</p>
             <button onclick="document.getElementById('createRealmBtn').click()" class="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700">
                 Create Your First Space
             </button>
         </div>
+    {% endif %}
+
+    <!-- Visited Realms Section -->
+    {% if visited_realms %}
+    <div class="mt-12">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Visited Spaces</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for realm in visited_realms %}
+            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition border-2 border-gray-200">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-2xl font-bold text-gray-900">{{ realm.name }}</h3>
+                    <span class="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded-full font-semibold">Visitor</span>
+                </div>
+                <p class="text-gray-600 mb-4">Owner: {{ realm.owner.username }}</p>
+                <a href="{% url 'play' realm.id %}" class="block w-full bg-blue-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-blue-700">
+                    Enter
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 </div>
 
@@ -138,10 +178,64 @@
     });
 
     function copyShareLink(shareId) {
-        const link = `${window.location.origin}/play/${shareId}/`;
+        const link = `${window.location.origin}/join/${shareId}/`;
         navigator.clipboard.writeText(link).then(() => {
             alert('Share link copied to clipboard!');
         });
     }
+
+    async function togglePrivacy(realmId, isPrivate) {
+        try {
+            const response = await fetch(`/api/realms/${realmId}/toggle-privacy/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const btn = document.getElementById(`privacy-${realmId}`);
+                if (data.only_owner) {
+                    btn.innerHTML = '🔒 Private';
+                    btn.className = 'text-sm px-2 py-1 rounded bg-red-100 text-red-800';
+                } else {
+                    btn.innerHTML = '🌐 Public';
+                    btn.className = 'text-sm px-2 py-1 rounded bg-green-100 text-green-800';
+                }
+            } else {
+                alert('Error toggling privacy. Please try again.');
+            }
+        } catch (error) {
+            alert('Error toggling privacy. Please try again.');
+        }
+    }
+
+    async function deleteRealm(realmId, realmName) {
+        if (!confirm(`Are you sure you want to delete "${realmName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/realms/${realmId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error deleting realm. Please try again.');
+            }
+        } catch (error) {
+            alert('Error deleting realm. Please try again.');
+        }
+    }
+
 </script>
 {% endblock %}
