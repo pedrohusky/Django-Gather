@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ realm.name }} - Gather Clone{% endblock %}
+
+{% block extra_head %}
+<script src="https://pixijs.download/release/pixi.min.js"></script>
+<script src="https://meet.jit.si/external_api.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="fixed inset-0 bg-gray-900">
+    <!-- Game Canvas Container -->
+    <div id="game-container" class="w-full h-full"></div>
+
+    <!-- UI Overlay -->
+    <div class="absolute top-4 left-4 bg-white/90 rounded-lg p-4 shadow-lg">
+        <h2 class="text-xl font-bold mb-2">{{ realm.name }}</h2>
+        <p class="text-sm text-gray-600">Players: <span id="player-count">1</span></p>
+    </div>
+
+    <!-- Controls -->
+    <div class="absolute bottom-4 left-4 bg-white/90 rounded-lg p-4 shadow-lg">
+        <div class="flex gap-2">
+            <button id="toggleCamera" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                📷 Camera
+            </button>
+            <button id="toggleMic" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                🎤 Mic
+            </button>
+        </div>
+    </div>
+
+    <!-- Video Chat Container -->
+    <div id="video-container" class="absolute top-4 right-4 flex flex-col gap-2">
+        <div id="local-video" class="w-48 h-36 bg-gray-800 rounded-lg overflow-hidden"></div>
+        <div id="remote-videos" class="flex flex-col gap-2"></div>
+    </div>
+
+    <!-- Chat -->
+    <div class="absolute bottom-4 right-4 bg-white/90 rounded-lg p-4 shadow-lg w-80">
+        <div id="chat-messages" class="h-40 overflow-y-auto mb-2 space-y-1">
+        </div>
+        <div class="flex gap-2">
+            <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" maxlength="300">
+            <button id="send-chat" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pass Django context to JavaScript
+    window.REALM_DATA = {
+        realmId: {{ realm.id }},
+        userId: {{ user_id }},
+        username: "{{ username }}",
+        skin: "{{ skin }}",
+        mapData: {{ realm.map_data|safe }}
+    };
+</script>
+
+<!-- Game Scripts (will be added) -->
+<script src="/static/js/signal.js"></script>
+<script src="/static/js/websocket/client.js"></script>
+<script src="/static/js/video-chat/jitsi-chat.js"></script>
+<script src="/static/js/pixi/pathfinding.js"></script>
+<script src="/static/js/pixi/App.js"></script>
+<script src="/static/js/pixi/Player.js"></script>
+<script src="/static/js/pixi/PlayApp.js"></script>
+<script src="/static/js/main.js"></script>
+{% endblock %}

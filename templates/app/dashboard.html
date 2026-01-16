@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Gather Clone{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900">My Spaces</h1>
+        <button id="createRealmBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">
+            Create New Space
+        </button>
+    </div>
+
+    {% if realms %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for realm in realms %}
+            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ realm.name }}</h3>
+                <p class="text-gray-600 mb-4">Created: {{ realm.created_at|date:"M d, Y" }}</p>
+                <div class="flex gap-2">
+                    <a href="{% url 'play' realm.id %}" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-center font-semibold hover:bg-blue-700">
+                        Enter
+                    </a>
+                    <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300" onclick="copyShareLink('{{ realm.share_id }}')">
+                        Share
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16">
+            <p class="text-xl text-gray-600 mb-4">You haven't created any spaces yet.</p>
+            <button onclick="document.getElementById('createRealmBtn').click()" class="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700">
+                Create Your First Space
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Create Realm Modal -->
+<div id="createRealmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold mb-4">Create New Space</h2>
+        <form id="createRealmForm">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="realmName" class="block text-sm font-medium text-gray-700 mb-2">Space Name</label>
+                <input type="text" id="realmName" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="My Awesome Space" required>
+            </div>
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                    Create
+                </button>
+                <button type="button" id="cancelBtn" class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('createRealmModal');
+    const createBtn = document.getElementById('createRealmBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const form = document.getElementById('createRealmForm');
+
+    createBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('realmName').value;
+        
+        // Default map data (simple 10x10 room)
+        const defaultMapData = {
+            spawnpoint: { roomIndex: 0, x: 5, y: 5 },
+            rooms: [{
+                name: "Main Room",
+                tilemap: {}
+            }]
+        };
+
+        // Populate tilemap with basic floor tiles
+        for (let x = 0; x < 10; x++) {
+            for (let y = 0; y < 10; y++) {
+                defaultMapData.rooms[0].tilemap[`${x}, ${y}`] = {
+                    floor: "ground_0",
+                    impassable: false
+                };
+            }
+        }
+
+        try {
+            const response = await fetch('/api/realms/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    map_data: defaultMapData
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error creating space: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error creating space: ' + error.message);
+        }
+    });
+
+    function copyShareLink(shareId) {
+        const link = `${window.location.origin}/play/${shareId}/`;
+        navigator.clipboard.writeText(link).then(() => {
+            alert('Share link copied to clipboard!');
+        });
+    }
+</script>
+{% endblock %}
