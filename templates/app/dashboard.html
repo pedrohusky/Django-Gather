@@ -61,6 +61,22 @@
 </div>
 
 <script>
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     const modal = document.getElementById('createRealmModal');
     const createBtn = document.getElementById('createRealmBtn');
     const cancelBtn = document.getElementById('cancelBtn');
@@ -102,7 +118,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
                     name: name,
@@ -114,10 +130,10 @@
             if (data.success) {
                 window.location.reload();
             } else {
-                alert('Error creating space: ' + data.error);
+                alert('Error creating space. Please try again.');
             }
         } catch (error) {
-            alert('Error creating space: ' + error.message);
+            alert('Error creating space. Please try again.');
         }
     });
 

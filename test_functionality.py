@@ -17,37 +17,44 @@ def test_models():
     """Test that models are working correctly"""
     print("Testing models...")
     
-    # Test user creation
-    user = User.objects.create_user(
-        username='testuser',
-        email='test@example.com',
-        password='testpass123'
-    )
-    print(f"✓ Created user: {user.username}")
+    user = None
+    realm = None
     
-    # Test profile auto-creation
-    profile = Profile.objects.get(user=user)
-    print(f"✓ Profile auto-created with skin: {profile.skin}")
-    
-    # Test realm creation
-    realm = Realm.objects.create(
-        owner=user,
-        name='Test Space',
-        map_data={
-            'spawnpoint': {'roomIndex': 0, 'x': 5, 'y': 5},
-            'rooms': [{
-                'name': 'Main Room',
-                'tilemap': {}
-            }]
-        }
-    )
-    print(f"✓ Created realm: {realm.name} (ID: {realm.id})")
-    print(f"  Share ID: {realm.share_id}")
-    
-    # Cleanup
-    realm.delete()
-    user.delete()
-    print("✓ Cleanup completed")
+    try:
+        # Test user creation
+        user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        print(f"✓ Created user: {user.username}")
+        
+        # Test profile auto-creation
+        profile = Profile.objects.get(user=user)
+        print(f"✓ Profile auto-created with skin: {profile.skin}")
+        
+        # Test realm creation
+        realm = Realm.objects.create(
+            owner=user,
+            name='Test Space',
+            map_data={
+                'spawnpoint': {'roomIndex': 0, 'x': 5, 'y': 5},
+                'rooms': [{
+                    'name': 'Main Room',
+                    'tilemap': {}
+                }]
+            }
+        )
+        print(f"✓ Created realm: {realm.name} (ID: {realm.id})")
+        print(f"  Share ID: {realm.share_id}")
+        
+    finally:
+        # Cleanup
+        if realm:
+            realm.delete()
+        if user:
+            user.delete()
+        print("✓ Cleanup completed")
     
     print("\n✅ All model tests passed!")
 

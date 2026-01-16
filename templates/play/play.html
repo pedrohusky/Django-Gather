@@ -52,8 +52,8 @@
     window.REALM_DATA = {
         realmId: {{ realm.id }},
         userId: {{ user_id }},
-        username: "{{ username }}",
-        skin: "{{ skin }}",
+        username: {{ username|escapejs }},
+        skin: "{{ skin|escapejs }}",
         mapData: {{ realm.map_data|safe }}
     };
 </script>
