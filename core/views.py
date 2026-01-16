@@ -173,8 +173,12 @@ def profile(request):
 @login_required
 def edit_realm(request, realm_id):
     """Map editor page"""
+    import json
     realm = get_object_or_404(Realm, id=realm_id, owner=request.user)
-    return render(request, 'editor/editor.html', {'realm': realm})
+    return render(request, 'editor/editor.html', {
+        'realm': realm,
+        'map_data_json': json.dumps(realm.map_data)
+    })
 
 
 @login_required
