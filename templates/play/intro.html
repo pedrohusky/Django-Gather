@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ realm.name }} - Gather Clone{% endblock %}
+
+{% block content %}
+<div class="fixed inset-0 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2 text-center">{{ realm.name }}</h1>
+        <p class="text-gray-600 text-center mb-6">Get ready to enter</p>
+
+        <!-- Character Preview -->
+        <div class="mb-6 p-6 bg-gray-50 rounded-lg text-center">
+            <p class="text-sm text-gray-600 mb-3">Your Character</p>
+            <div class="flex justify-center">
+                <img src="/static/sprites/characters/Character_{{ skin }}.png" 
+                     alt="Your Character" 
+                     class="w-32 h-32 object-contain">
+            </div>
+            <p class="text-sm font-semibold text-gray-700 mt-2">{{ user.username }}</p>
+        </div>
+
+        <!-- Camera/Mic Controls -->
+        <div class="mb-6 space-y-3">
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">📷</span>
+                    <span class="text-gray-700 font-medium">Camera</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="cameraToggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎤</span>
+                    <span class="text-gray-700 font-medium">Microphone</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="micToggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Enter Button -->
+        <button onclick="enterRealm()" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
+            Enter {{ realm.name }}
+        </button>
+
+        <div class="mt-4 text-center">
+            <a href="{% url 'dashboard' %}" class="text-sm text-gray-600 hover:text-gray-900">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function enterRealm() {
+        const cameraEnabled = document.getElementById('cameraToggle').checked;
+        const micEnabled = document.getElementById('micToggle').checked;
+        
+        // Store preferences in sessionStorage
+        sessionStorage.setItem('cameraEnabled', cameraEnabled);
+        sessionStorage.setItem('micEnabled', micEnabled);
+        
+        // Redirect to play page
+        window.location.href = "{% url 'play' realm.id %}";
+    }
+</script>
+{% endblock %}

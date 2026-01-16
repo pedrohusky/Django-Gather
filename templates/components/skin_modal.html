@@ -1,0 +1,35 @@
+<!-- Skin Selection Modal -->
+<div id="skinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Select Character Skin</h2>
+            <button id="closeSkinModal" class="text-gray-500 hover:text-gray-700 text-3xl font-bold">&times;</button>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="mb-6 p-6 bg-gray-50 rounded-lg text-center">
+            <p class="text-sm text-gray-600 mb-3">Preview</p>
+            <div id="skinPreview" class="flex justify-center">
+                <img src="/static/sprites/characters/Character_009.png" 
+                     alt="Preview" 
+                     class="w-32 h-32 object-contain">
+            </div>
+            <p id="skinLabel" class="text-sm font-semibold text-gray-700 mt-2">Skin 009</p>
+        </div>
+
+        <!-- Skin Grid -->
+        <div class="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 mb-6">
+            <!-- Skins will be populated by JavaScript -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-4">
+            <button id="cancelSkinSelection" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300">
+                Cancel
+            </button>
+            <button id="confirmSkinSelection" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
